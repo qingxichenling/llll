@@ -1,10 +1,19 @@
-*{margin:0}
+*{margin:0 ;
+  padding: 0;}
 body{
-       background-color: rgb(0,0,0) ;
+      background-color: rgb(0,0,0) ;
+      text-align: center ;
+      /* max-width: 800px; */
 	     }
-main>img#bookPage{
+
+main>img#bookFace{
  max-width: 100%;
-}
+ position: absolute;
+ left: 0 ;
+ top: 0;
+ transition: all 0.5s ease-out ; 
+ }
+
 header{
  height: 15% ;
  background: rgb(250,100,0);
@@ -21,50 +30,31 @@ footer{
 main{
  height: 65% ;
  position:relative;
- /*ÔÚÄ³Ð©Éè±¸ÖÐ£¬mainÈÝÆ÷ÄÚµÄbookPage²åÍ¼¿ÉÄÜ¸ß¶È¿ÉÄÜ³¬³öÉè¶¨·¶Î§£¬¶Ô³¬³öµÄ²¿·ÖÒþ²Ø´¦Àí£¡*/
- overflow: hidden ;
-}
-main>div#logoFace{
- width:50%; 
- position:absolute;
- top:5px;
- right:10px;
-}
-main>div#logoFace>img#teacherFace{
-  width:60%; 
-  border:1px solid red ;
- }
+ overflow: hidden ; 
+ background-image: url('lesson/back.jpg');
+ /* lesson/back.jpgæ˜¯ä¸€å¼ å¾ˆå°å°ºå¯¸çš„å›¾ï¼Œç”¨æˆ·é€‰æ‹©ä¹¦åŽä¼šè¢«lessonä¸‹çš„å…¶ä»–ä¹¦å°é¢é®ä½ */
 
-header>p#lessonName{
-  font-size: 1.5em;
-  letter-spacing: 0.2em;
-  text-align:center;
-   
+ background-size:contain;
+ background-position: center;
+ background-repeat: no-repeat;
 }
-main>div#logoFace>p#teaching{
-  color:white ;
-  text-shadow: 2px 2px green  
+
+
+header>p#book{
+  color: white;
+  font-size: 1.2em;
+  letter-spacing: 0.1em;
+  text-shadow:  2px 2px black;
 }
+nav>p#chapter{
+ color: white ;
+ font-size: 0.9em;
+ background-color: rgb(80,30,10) ;
+}
+
 footer>p#statusInfo{
   font-size: 0.75em;
   text-align:center;
  }
-nav>p#chapter{
- color: white ;
- font-size: 1.2em;
- border:0.1em outset ;
- text-align:center;
- background-color: brown ;
-}
-/*
-@media screen and (min-width: 600px){
-  img#bookPage{
-   display:block;
-   margin:auto;
-   }
-  header{ height: 120px ;}
-  p#lessonName{line-height:120px;}
-  footer{ height: 60px ;  }
-  p#footerInfo{line-height:60px;}
-}
-*/
+
+

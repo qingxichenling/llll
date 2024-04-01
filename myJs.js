@@ -1,112 +1,128 @@
-    var deviceWidth = document.body.clientWidth ;
-    var deviceHeight = window.innerHeight ;
-    var fontBase = parseInt(deviceWidth / 20);
+Plan.responsiveUI() ;
+
+Plan.loadImgOneByOne() ;
+
+ 
+
+ //不管是鼠标还是触屏，因为有且只有第一次点击，才需要载入第一本书，如何解决这个问题，下面这个代码片段演示了一个高智商的小技巧，
+  document.body.onclick =document.body.ontouchstart = function(){
+	$('main').replaceChild(UI.bookFace[0],$('bookFace')) ;
 	
-    console.log('AppWidth:'+ deviceWidth);
-    console.log('AppHeight:'+ deviceHeight);
-	console.log('fontBase:'+ fontBase + 'px');
-    document.body.style.height = deviceHeight + "px" ;
-	document.body.style.fontSize = fontBase + "px" ;
+	$('bookFace').style.opacity = 0 ;
+	setTimeout(function(){
+		$('bookFace').style.opacity = 0.9 ;
+	},200);
+	
+	Model.bookIndex = 0 ; //设置当前书的指针
+	document.body.onclick = document.body.ontouchstart = null ; 
+  };
 
-   //设置下面2行p元素行高与父容器的高度一致，使得文字在垂直方向居中 
-        $("lessonName").style.lineHeight = deviceHeight * 0.15 + 'px' ;
-        $("chapter").style.lineHeight = deviceHeight * 0.1 + 'px' ;
-		$("statusInfo").style.lineHeight = deviceHeight * 0.1 + 'px' ;
+  Model.mouse = {
+	isDown: false ,
+	x : 0 ,
+	deltaX : 0 ,
+	 } ;
 
-//------touch events register and handel----------
-
- const chapterDom = $('chapter') ;
-       chapterDom.addEventListener("touchstart",handleStart);
-	   chapterDom.addEventListener("touchend",handleEnd);
-       chapterDom.addEventListener("touchmove",handleMove);
-      //---APP开发期间，暂时将底部状态栏设为可无限增加高度的滚动渲染模式。
-      $("statusInfo").style.display = "inline" ;
-      $("statusInfo").style.overflow = "scroll" ;
-	 function handleStart(e){
-	  e.preventDefault();
-	  const output = $("statusInfo");
-	  const touches = e.changedTouches ;
-	  output.textContent = '开始摸时，共有'+touches.length + '个点的数据。';
-	  output.textContent +=  " Touch" + touches[0].identifier +"begin: "  ;
-
-	  //在touch事件发生时用touchMode.time记录开始时刻
-      touchModel.time = new Date() - 1 ;
-	  touchModel.ongoingXY = [] ;
-		 } //function  handleStart
-     function handleEnd(e){
-	  e.preventDefault();
-	  const output = $("statusInfo");
-	  const touches = e.changedTouches ;
-	  output.textContent += '结束摸时，有'+touches.length + '个点的数据。';
-	  output.textContent += "touch" + touches[0].identifier  + "End! " ;
-	 //在touch事件结束时用用当前时刻减touchMode.time，记录触摸移动发生的时间
-      touchModel.time = new Date() - touchModel.time;
-
-	  touchModel.respondTouch() ;
-	 } //function  handleEnd
-     function handleMove(e){
-	  e.preventDefault();
-	  const output = $("statusInfo");
-	  const touches = e.changedTouches ;
-	   
-	  for(let i =0 ;i<touches.length;i++){
-		  let x = parseInt(touches[i].pageX);
-		  let y = parseInt(touches[i].pageY);
-	   output.textContent +=  ' (x:' + x +','+'y:'+ y + ') ' ;
-	  }
-	 //在移动时把触屏捕捉的坐标点记录下来 
-	 let x = touches[0].pageX , y = touches[0].pageY ;
-         x = parseInt(x) ;
-		 y =  parseInt(y) ;
-	 touchModel.pushXY(x,y);
-	 } //function  handleMove
-
-  //----建立模型响应和处理touch事件产生的数据
- const chapters = ['第1章 Introduction','第2章 Number Systems','第3章 Data Storage','第4章 Computer Organization','第5章 Computer Networks and Internet','第6章 Operating Systems','第7章  Software Engineering','第8章  OOP Programming'] ;
- var touchModel = {
-   ongoingXY : [] ,
-   deltaX : 0 ,
-   deltaY : 0 ,
-   time : 0 ,
-   pushXY : function (x,y){
-	 let xy = {x,y} ;
-     this.ongoingXY.push(xy);
-   },
-   chapterNo : 0 ,
-   respondTouch : function(){
-    this.deltaX = this.ongoingXY[this.ongoingXY.length-1].x - this.ongoingXY[0].x ;
-	this.deltaY = this.ongoingXY[this.ongoingXY.length-1].y - this.ongoingXY[0].y ;
-    if (Math.abs(this.deltaX) > deviceWidth / 10) {
-		if (this.deltaX > 0){
-          this.nextChapter();
+  $('main').addEventListener("mousedown", function(ev){
+    ev.preventDefault() ;
+	console.log("mouse is down! ");
+    Model.mouse.isDown = true ;
+	Model.mouse.x = ev.pageX ;
+   }) ;
+  $('main').addEventListener("mousemove", function(ev){
+	ev.preventDefault() ;
+   let mouse = Model.mouse ;
+   if (mouse.isDown && Math.abs($('bookFace').offsetLeft) < UI.deviceWidth / 5){
+	   console.log("认可的 mouse事件： down and moving");
+	   mouse.deltaX = ev.pageX - mouse.x ;
+	   $('bookFace').style.left = $('bookFace').offsetLeft + mouse.deltaX + 'px' ;
+	   mouse.deltaX = 0 ;
+   } //end if mouse.isDown
+  }) ; //'main'.addEventListener("mousemove")
+  
+  $('main').addEventListener("mouseup",function(ev){
+	ev.preventDefault() ;
+   	let mouse = Model.mouse ;
+	    mouse.isDown = false ;
+	let mini = parseInt(UI.deviceWidth/5) ;
+	let offsetLeft =  $('bookFace').offsetLeft ;
+	 if( Math.abs(offsetLeft) > mini){
+ 		if( offsetLeft > mini){
+			 Model.prevBook();
 		}else{
-		  this.preChapter() ;
+			if( offsetLeft < - mini ){
+             Model.nextBook() ;
+			}
 		}
-    }
-	$("chapter").textContent = chapters[this.chapterNo];
-   },
-   preChapter : function (){
-     if (this.chapterNo ===0)  {
-		 this.chapterNo = chapters.length -1 ;
-     }else{
-	     this.chapterNo -- ;
+        mouse.x = 0 ;
+		this.removeChild($('bookFace')) ;
+		this.appendChild(UI.bookFace[Model.bookIndex]) ;
+		bookFace.style.opacity =  '0.1' ;
+      setTimeout(function(){ 
+		$('bookFace').style.left =  '0px' ;
+		$('bookFace').style.opacity =  '0.9' ;
+      },200); 
+	}else{ //end if Math.abs(mouse.deltaX) > mini,else 则需要书图回归原位
+		setTimeout(function(){ 
+			$('bookFace').style.left =  '0px' ;
+	    },200); 
 	 }
-   },
-   nextChapter :function (){
-      if (this.chapterNo === chapters.length -1)  {
-		 this.chapterNo = 0 ;
-     }else{
-	     this.chapterNo ++ ;
-	 }
-   },
- } ;
+   }) ;       //'main'.addEventListener("mouseup")
 
 
-  //$(66);检测下面的自定义函数
-  function $(eleId){
-    if (typeof eleId !== 'string'){
-	   throw("$函数调用实参错误，行参必须是字符串！");
-	   return 
-    }
-      return document.getElementById(eleId) ;
-   }
+//1、本次代码提交完成了触屏模型的模拟，当前代码设置对main元素（展示当前书的功能）有效。通过建立Model.touch模型，目前仅关注触摸对x轴方向的触摸，实现了不同书的切换。2、研究了基于Web浏览器触屏的三个底层事件：touchstart、touchmove、touchend，结合DOM技术设计了一个可以滑动触屏控制书图案左右移动的UI，该UI流畅地实现了书的切换；2、用户用触屏操作的动作细节包括：接触，移动，抬起，触摸的距离，通过逻辑综合判断这些因素，本片段代码设计了一个可行算法，判断了有效触摸，杜绝了无效触摸(无意触摸等较小的距离)，也实现了左右方向触摸的判断，展现了一个逻辑清晰，简洁的换书的GUI模型，3、最后，本例利用CSS动画开关设置，结合JS的异步代码，创作了一个有流畅动画效果的触屏专用UI。
+//------触屏模型定义和处理函数---------
+    Model.touch = {
+	target: null ,
+	x0: 0 ,
+	deltaX : 0 ,
+	} ; //Model.touch定义完毕
+
+	   $('main').addEventListener("touchstart",function(e){
+	       	   e.preventDefault();
+	          let touch = Model.touch ;
+	           touch.target = e.touches[0].target ;
+	           touch.x0 = e.touches[0].pageX ;
+	           console.log("touch start at:("+ touch.x0 + ', ' + e.touches[0].pageY + ")")  ;
+	    }); //$('main').addEventListener("touchstart"...
+
+	   $('main').addEventListener("touchend", function(e){
+	     e.preventDefault();
+	   let eTouch = e.changedTouches ;
+       let touch = Model.touch ;
+	       touch.x0 = 0 ;
+	   let mini = UI.deviceWidth / 3 ;
+        //需要书图回归原位的条件
+	   if (touch.deltaX <= mini && touch.deltaX >= -mini ){
+		  $('bookFace').style.opacity =  '0.9' ;
+          setTimeout(function(){ 
+			 $('bookFace').style.left =  '0px' ;
+	      },200);
+		  return ;
+	    }
+	      if (touch.deltaX > mini){
+			  Model.nextBook() ;
+	      }
+          if (touch.deltaX < -mini ){
+			  Model.prevBook() ;
+          }
+		this.removeChild($('bookFace')) ;
+		this.appendChild(UI.bookFace[Model.bookIndex]) ;
+		$('bookFace').style.opacity =  '0.1' ;
+        setTimeout(function(){ 
+		  $('bookFace').style.left =  '0px' ;
+		  $('bookFace').style.opacity =  '0.9' ;
+        },200); 
+	    touch.deltaX = 0 ;
+	  }); //$('main').addEventListener("touchend",...
+
+	   $('main').addEventListener("touchmove",  function (e){
+	     e.preventDefault();
+	    let eTouch = e.changedTouches[0] ;
+	    let touch = Model.touch ;
+	   	let x = parseInt(eTouch.pageX);
+		touch.deltaX = x - touch.x0 ;
+		if (Math.abs(touch.deltaX) < UI.deviceWidth / 2 ) {
+		    $('bookFace').style.left =  touch.deltaX + 'px' ;
+		  }
+       }); //$('main').addEventListener("touchmove", ...
